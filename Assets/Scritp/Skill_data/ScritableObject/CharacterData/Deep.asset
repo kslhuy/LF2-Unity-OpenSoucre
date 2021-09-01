@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3596ebddf02126b48a0321cfe232b874, type: 3}
+  m_Name: Deep
+  m_EditorClassIdentifier: 
+  CharacterType: 2
+  DefRightAttack: {fileID: 0}
+  DefLeftAttack: {fileID: 0}
+  DefUpAttack: {fileID: 0}
+  DefDownAttack: {fileID: 11400000, guid: b2f0f106ca19bc6478df69706d20ae1f, type: 2}
+  DefRightJump: {fileID: 0}
+  DefLeftJump: {fileID: 0}
+  DefUpJump: {fileID: 0}
+  DefDownJump: {fileID: 11400000, guid: dcf2dcc4137a3804cbf0eccd45c5a037, type: 2}
+  BaseHP: {fileID: 11400000, guid: 99e2455c18206714385d31dc4e0e7826, type: 2}
+  BaseMana: 10
+  Speed: 0
+  IsNpc: 1
+  DetectRange: 0
+  DisplayedName: 

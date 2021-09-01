@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MovesManager : MonoBehaviour
 {
-    [SerializeField] List<Move> avilableMoves; //All the Avilable Moves
+    [SerializeField] List<ActionType> avilableMoves; //All the Avilable Moves
     // PlayerController playerController;
     // ControlManager controlManager;
 
@@ -28,7 +28,7 @@ public class MovesManager : MonoBehaviour
 
     public void PlayMove(List<KeyCode> keycodes) //Send the moves to the player starting from the highest priorty
     {
-        foreach (Move move in avilableMoves)
+        foreach (ActionType move in avilableMoves)
         {
             if (move.isMoveAvilable(keycodes))
             {

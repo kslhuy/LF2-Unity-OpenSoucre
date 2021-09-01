@@ -2,21 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MLAPI;
 
-public class Mouvement_Player : MonoBehaviour
+public class Mouvement_Player : NetworkBehaviour
 {
     // public event EventHandler OnLanding;
 
-    private Animation_Base animationBase;
     Rigidbody rigidboby;
-    Animator anim;
-
-    float moveSpeed = 2.5f;
-    bool isHurting , isDead;
-    // bool facingRight = true;
+    
+    SpriteRenderer spirterender;
+    float moveSpeed = 1f;
+    bool facingRight = true;
     // float moveX;
     // float moveZ;
     float walkSpeed = 0.5f;
+
+    private bool isButtonMovePressed;
     private BoxCollider boxCollider;
     // [SerializeField] private LayerMask GoundMask;
     [SerializeField] private float jumpVelocity = 5f;
@@ -25,33 +26,36 @@ public class Mouvement_Player : MonoBehaviour
     private bool isAttacking;
     // Direction taken from input action for Player movement
     private Vector3 moveDir;  
-    Vector3 localScale;
+    private Vector3 LastMove;
+    private Vector3 AttackDir;
+
+
     // Start is called before the first frame update
     private State state;
     private enum State{
         Idle,
+        Move,
         Attack,
         Jump,
     }
     private void Awake()
     {
-        animationBase = GetComponent<Animation_Base>();
+        spirterender = GetComponentInChildren<SpriteRenderer>(); 
         rigidboby = GetComponent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
-        anim = GetComponent<Animator>();
-        
         SetStateIdle();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!IsOwner) return; 
+
         switch (state){
             case State.Idle:
                 HandleMovement();
                 HandleAttack();
                 HandleJump();
-                HanldeShotDavidBall();
                 break;
             case State.Attack:
                 HandleAttack();
@@ -59,8 +63,11 @@ public class Mouvement_Player : MonoBehaviour
             case State.Jump:
                 HandleAttack();
                 break;
+            case State.Move:
+                HandleMovement();
+                break;
         }
-
+    
         // Animation 
     }
     private void SetStatePunch(){
@@ -75,23 +82,34 @@ public class Mouvement_Player : MonoBehaviour
         state = State.Jump ;
     }
 
-    private bool IsGround(){
-        float extraHeightTest = 0.5f;
-        // Color rayColor;
-        return Physics.Raycast(boxCollider.bounds.center , Vector3.down,boxCollider.bounds.extents.y+extraHeightTest);
-        // if (!hit_ground){
-        //     rayColor = Color.green;
-        // }else {
-        //     rayColor = Color.red;
-        // }
-        // Debug.DrawRay(boxCollider.bounds.center , Vector3.down * (boxCollider.bounds.extents.y+extraHeightTest),rayColor);
-        // Debug.Log(hit_ground);
-    }
+    // private bool IsGround(){
+    //     float extraHeightTest = 0.5f;
+    //     // Color rayColor;
+    //     return Physics.Raycast(boxCollider.bounds.center , Vector3.down,boxCollider.bounds.extents.y+extraHeightTest);
+    //     // if (!hit_ground){
+    //     //     rayColor = Color.green;
+    //     // }else {
+    //     //     rayColor = Color.red;
+    //     // }
+    //     // Debug.DrawRay(boxCollider.bounds.center , Vector3.down * (boxCollider.bounds.extents.y+extraHeightTest),rayColor);
+    //     // Debug.Log(hit_ground);
+    // }
+
     private void HandleMovement(){
+        CheckMovement();
+        if (isButtonMovePressed){
+            state = State.Move;
+            // anim.Play("walk_david_anim");
+        }
+        else if ( !isButtonMovePressed)  {
+            state = State.Idle;
+            // anim.Play("idel_david_anim");
+        }
+    }
+    private void CheckMovement(){
         float moveZ = 0f;
         float moveX = 0f;
-        if (Input.GetKey(KeyCode.Z))
-        {
+        if (Input.GetKey(KeyCode.Z)){
             moveZ = -1f;
         }
         if (Input.GetKey(KeyCode.S)){
@@ -99,28 +117,44 @@ public class Mouvement_Player : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.D)){
             moveX = 1f;
-            transform.localScale = new Vector3(0.9f,1,1);
+            // transform.localScale = new Vector3(-0.85f,1,1);
+            // facingRight = true;
         }
         if (Input.GetKey(KeyCode.Q)){
             moveX = -1f;
-            transform.localScale = new Vector3(-0.9f,1,1);
+            // transform.localScale = new Vector3(-0.85f,1,1);
+            // facingRight = false;
         }
-        bool isIdle = moveZ == 0 && moveX == 0;
-        if (!isIdle && IsGround()){
-            animationBase.PlayWalkingAnimation();
-        }else{
-            animationBase.PlayIdelAnimation();
+        // Sauf Run state not flip 
+        Flip();
+        isButtonMovePressed = moveZ != 0 || moveX != 0;
+        // Vector3 velocity = new Vector3(0,rigidboby.velocity.y,0);
+        moveDir = new Vector3(moveX , 0 , moveZ).normalized  ;
+        if (isButtonMovePressed){
+            LastMove = new Vector3 (moveX ,0 , moveZ);
+            
         }
-        Vector3 velocity = new Vector3(0,rigidboby.velocity.y,0);
-        moveDir = new Vector3(moveX , 0 , moveZ).normalized + velocity;
-        
+        if (moveX != 0 ) {
+            AttackDir = new Vector3 (moveX ,0 , 0);
+        }
+
+
     }
 
-    private void HanldeShotDavidBall(){
 
-    }
     private void FixedUpdate() {
-        rigidboby.velocity = moveDir;
+        switch (state){
+            case State.Idle:
+                HandleJump();
+                break;
+            case State.Move:
+                // velocity_target = moveDir;
+                // rigidboby.velocity = moveDir;
+                transform.position += moveDir * moveSpeed * Time.deltaTime ;
+                HandleJump();
+                break;
+        }
+        
     }
     private void HandleAttack(){
         if (Input.GetKey(KeyCode.Y)){
@@ -131,51 +165,44 @@ public class Mouvement_Player : MonoBehaviour
                 isAttacking = true;
                 // anim.Play("punch1_david_anim");
                 // Invoke("SetStateIdle", attackDelay);
-                if (isPlayingPunch1Animation()){
-                    anim.Play("punch2_david_anim");
-                    Invoke("SetStateIdle", attackDelay);
+                // if (isPlayingPunch1Animation()){
+                    // anim.Play("punch2_david_anim");
+                Invoke("SetStateIdle", attackDelay);
         
-                }else{
-                    anim.Play("punch1_david_anim");
-                    Invoke("SetStateIdle", attackDelay);
-                }
+                // }else{
+                    // anim.Play("punch1_david_anim");
+                    // Invoke("SetStateIdle", attackDelay);
+                // }
             }
             // anim.Play("punch1_david_anim");
                 
         }
     }
 
-    private bool isPlayingPunch1Animation(){
-        return anim.GetCurrentAnimatorStateInfo(0).IsName("punch1_david_anim");
-    }
-    private bool isPlayingPunch2Animation(){
-        return anim.GetCurrentAnimatorStateInfo(0).IsName("punch2_david_anim");
-    }
+    // private bool isPlayingPunch1Animation(){
+    //     return anim.GetCurrentAnimatorStateInfo(0).IsName("punch1_david_anim");
+    // }
+    // private bool isPlayingPunch2Animation(){
+    //     return anim.GetCurrentAnimatorStateInfo(0).IsName("punch2_david_anim");
+    // }
 
     private void HandleJump(){
-        if (IsGround() && Input.GetKey(KeyCode.U)){
+        if ( Input.GetKey(KeyCode.U)){
             SetStateJump();
-            anim.Play("jump_david_anim");
-            Invoke("Jump" , 0.2f);
+            // anim.Play("jump_david_anim");
+            // Invoke("Jump" , 0.2f);
+            rigidboby.velocity = Vector3.up* jumpVelocity + moveDir;
             Invoke("SetStateIdle", jumpDelay);
         }
     }
-    private 
-    void Jump(){
-        rigidboby.velocity = Vector3.up* jumpVelocity;
+    void Flip (){
+        if (LastMove.x > 0 && !facingRight){
+            facingRight = !facingRight;
+            spirterender.flipX = false;
+        }else if (LastMove.x < 0 && facingRight) {
+            spirterender.flipX = true;
+            facingRight = !facingRight;
+        }
+        
     }
-    
-    
-    // void Facing(){
-    //     if (facingRight && moveX < 0){
-    //         facingRight = false;
-    //         transform.localScale = new Vector3(-0.9f,1,1);
-
-    //     }
-    //     else if(!facingRight && moveX >0) {
-    //         facingRight = true;
-    //         transform.localScale = new Vector3(0.9f,1,1);
-    //     }
-            
-    // }
 }

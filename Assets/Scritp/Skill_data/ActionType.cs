@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Move", menuName = "New Move")]
-public class Move : ScriptableObject
+[CreateAssetMenu(fileName = "ActionType", menuName = "New ActionType")]
+public class ActionType : ScriptableObject
 {
     [SerializeField] List<KeyCode> movesKeyCodes; //the List and order of the Moves
     [SerializeField] TypeSkills typeSkills; //The kind of the move

@@ -6,5 +6,8 @@
     DefRightAttack,
     DefDownJump,
     DefUpJump,
+    DefLeftJump,
+    DefRightJump,
+
     DefJumpAttack
 };

@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Lobby/Scenes/LF2_normal.unity
+    guid: f8b34536da2ca974f96d7480add36fe8
   m_configObjects: {}

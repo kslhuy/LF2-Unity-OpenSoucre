@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+// using UnityEngine.UI;
+using MLAPI;
 
-
-public class Mouvement_Player1 : MonoBehaviour
+public class Mouvement_Player1 : NetworkBehaviour
 {
     Rigidbody rigidboby;
     Animator anim;
@@ -13,17 +13,16 @@ public class Mouvement_Player1 : MonoBehaviour
     [SerializeField] private GameObject HitBoxLeft ;
     [SerializeField] private GameObject HitBoxRight ;
 
-    public event EventHandler CheckKeypressed;
-    [SerializeField] Text controlsTestText; //Just for testing for printing the keys
+
+    // [SerializeField] Text controlsTestText; //Just for testing for printing the keys
     [SerializeField] List<KeyCode> KeysPressed; //List of all the Keys Pressed so far
 
-    [SerializeField] List<KeyCode> KeysPressedLeft; //List of all the Keys Pressed so far
-    [SerializeField] List<Move> avilableSkills; //All the Avilable Moves
+    // [SerializeField] List<KeyCode> KeysPressedLeft; //List of all the Keys Pressed so far
+    [SerializeField] List<ActionType> avilableSkills; //All the Avilable Moves
+
 
     /*Check all button pressed  */
     private bool isButtonMovePressed = false;
-    private bool isButtonAttackPressed;
-    private bool isButtonJumpPressed;
     private bool isButtonDefensePressed;
     
     /*Check all button pressed  */
@@ -35,31 +34,22 @@ public class Mouvement_Player1 : MonoBehaviour
 
     
 
-    [SerializeField] private float ballSpeed = 3f;
-    bool isHurting , isDead;
     private Vector3 LastMove;
     bool facingRight = true;
 
-    float walkSpeed = 0.5f;
     private BoxCollider boxCollider;
     [SerializeField] private LayerMask GoundMask;
     [SerializeField] private float jumpVelocity = 4f;
-    [SerializeField] private float attackDelay = 0.33f;
-    [SerializeField] private float jumpDelay = 1f;
+    // [SerializeField] private float attackDelay = 0.33f;
+    // [SerializeField] private float jumpDelay = 1f;
     
-    private float timer;
-
-
-    // private bool comboPrioriy ;
-
-    // private float ComboResetTime = 0.2f; 
+    // private float timer;
 
     float clickWaitTime = 0.2f;
     
     float lastClickTimeRight;
     float lastClickTimeleft;
-    int clickCountright ;
-    int clickCountleft;
+
 
     int clickCount;
     private bool IsAttacking;
@@ -69,7 +59,7 @@ public class Mouvement_Player1 : MonoBehaviour
     // private int bitmask = 1 << 7;
     private Vector3 AttackDir;
 
-    
+
     private State state;
 
     private enum State{
@@ -105,6 +95,7 @@ public class Mouvement_Player1 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!IsOwner) return;
         // CheckMovement();
         CheckDoubleClicked();
         switch (state){
@@ -142,12 +133,11 @@ public class Mouvement_Player1 : MonoBehaviour
         
         if (isButtonDefensePressed){
             DetectPressedKey();
-            PrintControls();
+            // PrintControls();
             HandleAnimationSkill();
         }
         
         // Debug.Log(state);
-
 
     }
 
@@ -378,16 +368,25 @@ public class Mouvement_Player1 : MonoBehaviour
             CreateBall();
         }
     }
-    private void CreateBall(){
-        Vector3 OffsetToHand = new Vector3(0.1f,0.25f,0) +  AttackDir*0.1f;
+    private void CreateBall()
+    {
+        Vector3 OffsetToHand = new Vector3(0.1f, 0.25f, 0) + AttackDir * 0.1f;
         DavidBall.Create(GetPosition() + OffsetToHand, AttackDir);
-        
-        if (isD_left_a_david_1Animation()){
+
+        D_left_a_Animation();
+
+    }
+
+    private void D_left_a_Animation()
+    {
+        if (isD_left_a_david_1Animation())
+        {
             anim.Play("d_left_a_2david_anim");
-        }else{
+        }
+        else
+        {
             anim.Play("d_left_a_david_anim");
         }
-
     }
 
     private bool isPlayingPunch1Animation(){
@@ -497,7 +496,7 @@ public class Mouvement_Player1 : MonoBehaviour
     private void HandleAnimationSkill(){
         if (KeysPressed.Count == 3 && isButtonDefensePressed){
             int i = 0;
-            foreach (Move move in avilableSkills){
+            foreach (ActionType move in avilableSkills){
                 // Debug.Log("true");
                 i += 1 ; 
                 if (move.isMoveAvilable(KeysPressed)){
@@ -545,11 +544,11 @@ public class Mouvement_Player1 : MonoBehaviour
     
 
     //Printing Keys just for testing
-    public void PrintControls() {
-        controlsTestText.text = " Keys Pressed :";
-        foreach (KeyCode kcode in KeysPressed)
-            controlsTestText.text += kcode + ",";
-    }
+    // public void PrintControls() {
+    //     controlsTestText.text = " Keys Pressed :";
+    //     foreach (KeyCode kcode in KeysPressed)
+    //         controlsTestText.text += kcode + ",";
+    // }
 
         //     bool isIdle = moveZ == 0 && moveX == 0;
 

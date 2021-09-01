@@ -11,4 +11,5 @@ public class GameAsset : MonoBehaviour
     }
     public Transform pfDavidBall;
     public Transform pfImpactPunch;
+    [SerializeField] private CharacterClass m_characterClass;
 }
