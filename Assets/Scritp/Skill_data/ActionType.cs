@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 [CreateAssetMenu(fileName = "ActionType", menuName = "New ActionType")]
 public class ActionType : ScriptableObject
 {
@@ -44,3 +46,4 @@ public class ActionType : ScriptableObject
         return typeSkills;
     }
 }
+

@@ -8,4 +8,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Lobby/Scenes/LF2_normal.unity
     guid: f8b34536da2ca974f96d7480add36fe8
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: 79982d637d7360846b4ca3aea1d217be, type: 2}

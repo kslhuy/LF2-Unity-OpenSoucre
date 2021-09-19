@@ -17,7 +17,7 @@ public class DavidMovement : MonoBehaviour
     [SerializeField] List<KeyCode> KeysPressed; //List of all the Keys Pressed so far
     [SerializeField] List<ActionType> avilableSkills; //All the Avilable Moves
 
-
+    [SerializeField] FixedJoystick joystick;
 
     /*Check all button pressed  */
     private bool isButtonMovePressed = false;
@@ -39,9 +39,6 @@ public class DavidMovement : MonoBehaviour
     [SerializeField] private LayerMask GoundMask;
     [SerializeField] private float _jumpNormalSpeed = 4f;
     [SerializeField] private float _jumpRunSpeed = 3.5f;
-    [SerializeField] private float attackDelay = 0.33f;
-    [SerializeField] private float jumpDelay = 1f;
-    
 
     float clickWaitTime = 0.2f;
     
@@ -72,8 +69,8 @@ public class DavidMovement : MonoBehaviour
         Defense,
         DefdownA,
         DefupA,
-        DefleftA
-
+        DefleftA,
+        RunPunch
     }
 
     private void Awake()
@@ -106,9 +103,6 @@ public class DavidMovement : MonoBehaviour
             PrintControls();
             HandleAnimationSkill();
         }
-
-
-
     }
 
     private void TransitionState()
@@ -216,22 +210,24 @@ public class DavidMovement : MonoBehaviour
     private void CheckMovement(){
         float moveZ = 0f;
         float moveX = 0f;
-        if (Input.GetKey(KeyCode.Z)){
-            moveZ = -1f;
-        }
-        if (Input.GetKey(KeyCode.S)){
-            moveZ = +1f;
-        }
-        if (Input.GetKey(KeyCode.D)){
-            moveX = 1f;
-            // transform.localScale = new Vector3(-0.85f,1,1);
-            // facingRight = true;
-        }
-        if (Input.GetKey(KeyCode.Q)){
-            moveX = -1f;
-            // transform.localScale = new Vector3(-0.85f,1,1);
-            // facingRight = false;
-        }
+        moveX = joystick.Horizontal;
+        moveZ = -joystick.Vertical;
+        // if (Input.GetKey(KeyCode.UpArrow)){
+        //     moveZ = -1f;
+        // }
+        // if (Input.GetKey(KeyCode.DownArrow)){
+        //     moveZ = +1f;
+        // }
+        // if (Input.GetKey(KeyCode.RightArrow)){
+        //     moveX = 1f;
+        //     // transform.localScale = new Vector3(-0.85f,1,1);
+        //     // facingRight = true;
+        // }
+        // if (Input.GetKey(KeyCode.LeftArrow)){
+        //     moveX = -1f;
+        //     // transform.localScale = new Vector3(-0.85f,1,1);
+        //     // facingRight = false;
+        // }
         // Sauf Run state not flip 
         Flip();
         isButtonMovePressed = moveZ != 0 || moveX != 0;
@@ -279,11 +275,11 @@ public class DavidMovement : MonoBehaviour
         CheckMovement();
         if (IsGround() && isButtonMovePressed){
             SetStateMove();
-            anim.Play("walk_david_anim");
+            anim.Play("Walk_anim");
         }
         else if (IsGround () && !isButtonMovePressed)  {
             SetStateIdle();
-            anim.Play("idel_david_anim");
+            anim.Play("Idle_anim");
         }
     }
 
@@ -343,10 +339,18 @@ public class DavidMovement : MonoBehaviour
     // need to review 
     private void HanleAttackRun(){
         if (Input.GetKeyDown(KeyCode.Y)){
+            SetStateRun_Punch();
             anim.Play("runPunch_david_anim");
-            transform.position += AttackDir * _RunSpeed * Time.deltaTime ;
+            // transform.position += AttackDir * _RunSpeed * Time.deltaTime ;
+            rigidboby.velocity = AttackDir * _RunSpeed;
         }
     }
+
+    private void SetStateRun_Punch()
+    {
+        state = State.RunPunch;
+    }
+
     private void HandleJump(){
         if (IsGround() && Input.GetKeyDown(KeyCode.U) && state != State.Run){
             SetStateJump();
@@ -364,8 +368,8 @@ public class DavidMovement : MonoBehaviour
     }
 
     private void HandleDoubleJump(){
-        float conditionToDoubleJump = 0.02f;
-        if (Input.GetKeyDown(KeyCode.U) && Mathf.Abs(rigidboby.velocity.y) < conditionToDoubleJump ){
+        float conditionToDoubleJump = 0.2f;
+        if (Input.GetKeyDown(KeyCode.U) && Mathf.Abs(rigidboby.velocity.y) < conditionToDoubleJump && is_End_JumpAnimation()){
             anim.Play("jumpRun_david_anim");
             rigidboby.velocity = Vector3.up* _jumpRunSpeed + AttackDir*_RunSpeed ;
         }
@@ -425,6 +429,10 @@ public class DavidMovement : MonoBehaviour
     private bool is_Punch1Animation(){
         return anim.GetCurrentAnimatorStateInfo(0).IsName("punch1_david_anim");
     }
+
+    private bool is_End_JumpAnimation(){
+        return anim.GetCurrentAnimatorStateInfo(0).IsName("EndJump_david_anim");
+    }
     private bool is_D_left_a_david_1Animation(){
         return anim.GetCurrentAnimatorStateInfo(0).IsName("d_left_a_david_anim");
     }
@@ -479,7 +487,10 @@ public class DavidMovement : MonoBehaviour
 
             case State.DefdownA:
                 rigidboby.velocity =  AttackDir * distance_defDownA  ;
- 
+                break;
+
+            case State.RunPunch: 
+                transform.position += AttackDir * _RunSpeed * Time.deltaTime ;
                 break;
 
         }

@@ -8,7 +8,9 @@ public class DavidBall : MonoBehaviour
 {
     public static event EventHandler OnBallHitTarget;
     public static DavidBall Create(Vector3 positon , Vector3 direction){
-        Transform davidBallTransform =  Instantiate(GameAsset.instance.pfDavidBall,positon , Quaternion.identity);
+        // Transform davidBallTransform =  Instantiate(GameAsset.instance.pfDavidBall,positon , Quaternion.identity);
+        Transform davidBallTransform =  Instantiate(GameAsset.instance.pfDeepDLA,positon , Quaternion.identity);
+
         davidBallTransform.eulerAngles = new Vector3(0,0,UtilsClass.GetAngleFromVectorFloat(direction));
         DavidBall davidBall = davidBallTransform.GetComponent<DavidBall>();
         davidBall.Setup(direction);
@@ -46,17 +48,19 @@ public class DavidBall : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    private void OnTriggerEnter(Collider other) {
-        if (other.gameObject.tag == "Hittable" || other.gameObject.tag == "Player2"){
-            // if (OnBallHitTarget !=null) OnBallHitTarget(this , EventArgs.Empty);
-                anim.Play("ball_hit");
-                Invoke("Destroythis",0.33f);
+    private void OnTriggerEnter(Collider collider) {
+        IDamageable damageable = collider.GetComponent<IDamageable>();
+        if (damageable != null){
+            Debug.Log(damageable);
+            // Destroy(gameObject);
+        }
+        // if (other.gameObject.tag == "Hittable" || other.gameObject.tag == "Player2"){
+        //     // if (OnBallHitTarget !=null) OnBallHitTarget(this , EventArgs.Empty);
+                // anim.Play("ball_hit");
+                // Invoke("Destroythis",0.33f);
                 
             // Debug.Log("True");
         }
-    }
-
-    private void Destroythis(){
-        Destroy(gameObject);
-    }
 }
+
+
